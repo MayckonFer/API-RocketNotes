@@ -5,7 +5,7 @@ class NotesController {
     const { title, descriptions, tags, links } = request.body;
     const user_id = request.user.id;
 
-    const note_id = await knex("notes").insert({
+    const [note_id] = await knex("notes").insert({
       title,
       descriptions,
       user_id,
@@ -14,7 +14,7 @@ class NotesController {
     const linksInsert = links.map((link) => {
       return {
         note_id,
-        url: links,
+        url: link,
       };
     });
 
@@ -73,6 +73,7 @@ class NotesController {
         .whereLike("notes.title", `%${title}%`)
         .whereIn("name", filterTags)
         .innerJoin("notes", "notes.id", "tags.note_id")
+        .groupBy("notes.id")
         .orderBy("notes.title");
     } else {
       notes = await knex("notes")
